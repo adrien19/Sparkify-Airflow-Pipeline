@@ -22,6 +22,8 @@ class LoadFactOperator(BaseOperator):
 
         super(LoadFactOperator, self).__init__(*args, **kwargs)
         # Mapping passed in params
+        self.table = table,
+        self.fields = fields,
         self.redshift_conn_id = redshift_conn_id
         self.load_facts_sql = load_facts_sql
 

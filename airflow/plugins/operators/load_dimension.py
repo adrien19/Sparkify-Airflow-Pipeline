@@ -7,8 +7,9 @@ class LoadDimensionOperator(BaseOperator):
     ui_color = '#80BD9E'
     dimensions_table_insert = ("""
         INSERT INTO {destination_table} (
-            {fields})
-            {load_dimension_sql}
+            {fields}
+            )
+            {load_dimension}
     """)
 
     @apply_defaults
@@ -17,7 +18,7 @@ class LoadDimensionOperator(BaseOperator):
                  table='',
                  fields='',
                  redshift_conn_id='',
-                 load_dimension_sql='',
+                 load_dimension='',
                  *args, **kwargs):
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
@@ -25,7 +26,7 @@ class LoadDimensionOperator(BaseOperator):
         self.table = table
         self.fields = fields
         self.redshift_conn_id = redshift_conn_id
-        self.load_dimension_sql = load_dimension_sql
+        self.load_dimension = load_dimension
 
     def execute(self, context):
         self.log.info('Loading {} dimensions in redshift').format(self.table)
@@ -34,7 +35,7 @@ class LoadDimensionOperator(BaseOperator):
         dimensions_table_insert = LoadDimensionOperator.dimensions_table_insert.format(
             destination_table = self.table,
             fields = self.fields,
-            load_dimension_sql = self.load_dimension_sql
+            load_dimension = self.load_dimension
         )
 
         redshift.run(dimensions_table_insert)

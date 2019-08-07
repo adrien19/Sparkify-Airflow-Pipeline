@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import os
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
+from airflow.operators.adrien_plugin import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
 
@@ -62,7 +62,7 @@ load_user_dimension_table = LoadDimensionOperator(
     table='users',
     fields='userid, first_name, last_name, gender, level',
     redshift_conn_id = 'redshift',
-    load_dimension_sql = SqlQueries.user_table_insert
+    load_dimension = SqlQueries.user_table_insert
 )
 
 load_song_dimension_table = LoadDimensionOperator(
@@ -71,7 +71,7 @@ load_song_dimension_table = LoadDimensionOperator(
     table='songs',
     fields='songid, title, artistid, year, duration ',
     redshift_conn_id = 'redshift',
-    load_dimension_sql = SqlQueries.song_table_insert
+    load_dimension = SqlQueries.song_table_insert
 )
 
 load_artist_dimension_table = LoadDimensionOperator(
@@ -80,7 +80,7 @@ load_artist_dimension_table = LoadDimensionOperator(
     table='artists',
     fields='artistid, name, location, lattitude, longitude',
     redshift_conn_id = 'redshift',
-    load_dimension_sql = SqlQueries.artist_table_insert
+    load_dimension = SqlQueries.artist_table_insert
 )
 
 load_time_dimension_table = LoadDimensionOperator(
@@ -89,7 +89,7 @@ load_time_dimension_table = LoadDimensionOperator(
     table='times',
     fields='start_time, hour, day, week, month, year, week_day',
     redshift_conn_id = 'redshift',
-    load_dimension_sql = SqlQueries.time_table_insert
+    load_dimension = SqlQueries.time_table_insert
 )
 
 run_quality_checks = DataQualityOperator(
@@ -117,3 +117,5 @@ load_song_dimension_table >> run_quality_checks
 load_user_dimension_table >> run_quality_checks
 load_artist_dimension_table >> run_quality_checks
 load_time_dimension_table >> run_quality_checks
+
+run_quality_checks >> end_operator

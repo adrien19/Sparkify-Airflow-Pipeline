@@ -17,7 +17,6 @@ class DataQualityOperator(BaseOperator):
         # Mapping params to passed in values
         self.table = tables
         self.redshift_conn_id = redshift_conn_id
-        self.load_dimension_sql = load_dimension_s
 
     def execute(self, context):
         self.log.info('Starting data quality check for {} in Redshift').format(self.table)

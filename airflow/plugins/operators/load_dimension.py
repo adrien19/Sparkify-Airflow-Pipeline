@@ -29,7 +29,7 @@ class LoadDimensionOperator(BaseOperator):
         self.load_dimension = load_dimension
 
     def execute(self, context):
-        self.log.info('Loading {} dimensions in redshift').format(self.table)
+        self.log.info(f'Loading {self.table} dimensions in redshift')
         redshift = PostgresHook(postgres_conn_id = self.redshift_conn_id)
 
         dimensions_table_insert = LoadDimensionOperator.dimensions_table_insert.format(

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import os
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.adrien_plugin import (StageToRedshiftOperator, LoadFactOperator,
+from operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
 
@@ -16,7 +16,10 @@ s3_songdata_key = dag_config["s3_songdata_key"]
 
 default_args = {
     'owner': 'Adrien',
+    'depends_on_past': False,
     'start_date': datetime(2019, 1, 12),
+    'retries': 1,
+    'retry_delay': timedelta(minutes=1),
 }
 
 dag = DAG('sparkify_dag',

@@ -11,8 +11,8 @@ class StageToRedshiftOperator(BaseOperator):
         FROM {}
         ACCESS_KEY_ID '{}'
         SECRET_ACCESS_KEY '{}'
-        IGNOREHEADER {}
-        DELIMITER '{}'
+        FORMAT AS JSON 'auto'
+        
     """
 
     @apply_defaults
@@ -23,8 +23,6 @@ class StageToRedshiftOperator(BaseOperator):
                  aws_credentials_id='',
                  s3_key='',
                  s3_bucket='',
-                 delimiter='',
-                 ignore_headers=1,
                  *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
@@ -34,8 +32,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.aws_credentials_id = aws_credentials_id
         self.s3_key = s3_key
         self.s3_bucket = s3_bucket
-        self.delimiter=delimiter
-        self.ignore_headers= ignore_headers
+
 
     def execute(self, context):
         aws_hook = AwsHook(self.aws_credentials_id)
@@ -49,15 +46,14 @@ class StageToRedshiftOperator(BaseOperator):
 
         self.log.info('Starting to copy data from s3 to redshift')
         rendered_data_source_key = self.s3_key.format(**context)
-        data_source_s3_path = "s3://{}/{}".format(self.s3_bucket, rendered_data_source_key)
+        #data_source_s3_path = "s3://{}/{}/".format(self.s3_bucket, rendered_data_source_key)
+        data_source_s3_path = f"'s3://{self.s3_bucket}/{rendered_data_source_key}'"
 
         copy_from_s3_sql = StageToRedshiftOperator.copy_from_s3_sql.format(
             self.table,
             data_source_s3_path,
             credentials.access_key,
             credentials.secret_key,
-            self.ignore_headers,
-            self.delimiter
         )
 
         redshift.run(copy_from_s3_sql)

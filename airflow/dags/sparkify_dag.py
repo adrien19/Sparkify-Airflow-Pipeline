@@ -9,7 +9,9 @@ from helpers import SqlQueries
 from helpers import CreateTableSqlQueries
 from airflow.models import Variable
 
-# Using Airflow's Variable to for accessing private data
+# Using Airflow's Variable to for accessing source data config
+#   Including s3 bucket and Keys
+
 dag_config = Variable.get("Sparkify_configs", deserialize_json=True)
 s3_bucket = dag_config["s3_bucket"]
 s3_logdata_key = dag_config["s3_logdata_key"]
@@ -35,64 +37,66 @@ dag = DAG('sparkify_dag',
 start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
 
 ## Creating tables first in Redshift ##
-# songplay_table_create = CreateTableRedshiftOperator(
-#     task_id = 'create_songplays_table',
-#     dag = dag,
-#     table = 'songplays',
-#     redshift_conn_id = 'redshift',
-#     create_table_sql = CreateTableSqlQueries.songplay_table_create
-# )
-#
-# artist_table_create = CreateTableRedshiftOperator(
-#     task_id = 'create_artist_table',
-#     dag = dag,
-#     table = 'artists',
-#     redshift_conn_id = 'redshift',
-#     create_table_sql = CreateTableSqlQueries.artist_table_create
-# )
-#
-# song_table_create = CreateTableRedshiftOperator(
-#     task_id = 'create_songs_table',
-#     dag = dag,
-#     table = 'songs',
-#     redshift_conn_id = 'redshift',
-#     create_table_sql = CreateTableSqlQueries.song_table_create
-# )
-#
-# user_table_create = CreateTableRedshiftOperator(
-#     task_id = 'create_users_table',
-#     dag = dag,
-#     table = 'users',
-#     redshift_conn_id = 'redshift',
-#     create_table_sql = CreateTableSqlQueries.user_table_create
-# )
-#
-# time_table_create = CreateTableRedshiftOperator(
-#     task_id = 'create_times_table',
-#     dag = dag,
-#     table = 'times',
-#     redshift_conn_id = 'redshift',
-#     create_table_sql = CreateTableSqlQueries.time_table_create
-# )
-#
-# staging_events_table_create = CreateTableRedshiftOperator(
-#     task_id = 'create_staging_events_table',
-#     dag = dag,
-#     table = 'staging_events',
-#     redshift_conn_id = 'redshift',
-#     create_table_sql = CreateTableSqlQueries.staging_events_table_create
-# )
-#
-# staging_songs_table_create = CreateTableRedshiftOperator(
-#     task_id = 'create_staging_songs_table',
-#     dag = dag,
-#     table = 'staging_songs',
-#     redshift_conn_id = 'redshift',
-#     create_table_sql = CreateTableSqlQueries.staging_songs_table_create
-# )
+#######################################
+songplay_table_create = CreateTableRedshiftOperator(
+    task_id = 'create_songplays_table',
+    dag = dag,
+    table = 'songplays',
+    redshift_conn_id = 'redshift',
+    create_table_sql = CreateTableSqlQueries.songplay_table_create
+)
+
+artist_table_create = CreateTableRedshiftOperator(
+    task_id = 'create_artist_table',
+    dag = dag,
+    table = 'artists',
+    redshift_conn_id = 'redshift',
+    create_table_sql = CreateTableSqlQueries.artist_table_create
+)
+
+song_table_create = CreateTableRedshiftOperator(
+    task_id = 'create_songs_table',
+    dag = dag,
+    table = 'songs',
+    redshift_conn_id = 'redshift',
+    create_table_sql = CreateTableSqlQueries.song_table_create
+)
+
+user_table_create = CreateTableRedshiftOperator(
+    task_id = 'create_users_table',
+    dag = dag,
+    table = 'users',
+    redshift_conn_id = 'redshift',
+    create_table_sql = CreateTableSqlQueries.user_table_create
+)
+
+time_table_create = CreateTableRedshiftOperator(
+    task_id = 'create_times_table',
+    dag = dag,
+    table = 'times',
+    redshift_conn_id = 'redshift',
+    create_table_sql = CreateTableSqlQueries.time_table_create
+)
+
+staging_events_table_create = CreateTableRedshiftOperator(
+    task_id = 'create_staging_events_table',
+    dag = dag,
+    table = 'staging_events',
+    redshift_conn_id = 'redshift',
+    create_table_sql = CreateTableSqlQueries.staging_events_table_create
+)
+
+staging_songs_table_create = CreateTableRedshiftOperator(
+    task_id = 'create_staging_songs_table',
+    dag = dag,
+    table = 'staging_songs',
+    redshift_conn_id = 'redshift',
+    create_table_sql = CreateTableSqlQueries.staging_songs_table_create
+)
 
 
-## LOADING staging tables in redshit
+## LOADING staging tables in redshit ##
+#######################################
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id = 'Stage_events',
     dag = dag,
@@ -115,6 +119,8 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     JSON_formatting="'auto' truncatecolumns"
 )
 
+## LOADING facts tables on song plays in redshit ##
+###################################################
 load_songplays_table = LoadFactOperator(
     task_id = 'Load_songplays_fact_table',
     dag = dag,
@@ -124,6 +130,9 @@ load_songplays_table = LoadFactOperator(
     load_facts_sql = SqlQueries.songplay_table_insert
 )
 
+
+## LOADING dimensions tables on song plays in redshit ##
+########################################################
 load_user_dimension_table = LoadDimensionOperator(
     task_id='Load_user_dim_table',
     dag=dag,
@@ -173,36 +182,36 @@ end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
 
 
 
-## Task execution ordering #############
+## Task execution ordering ##
+#############################
 
-# start_operator >> songplay_table_create
-# start_operator >> artist_table_create
-# start_operator >> song_table_create
-# start_operator >> user_table_create
-# start_operator >> time_table_create
-# start_operator >> staging_events_table_create
-# start_operator >> staging_songs_table_create
-#
-#
-# songplay_table_create >> stage_events_to_redshift
-# artist_table_create >> stage_events_to_redshift
-# song_table_create >> stage_events_to_redshift
-# user_table_create >> stage_events_to_redshift
-# time_table_create >> stage_events_to_redshift
-# staging_events_table_create >> stage_events_to_redshift
-# staging_songs_table_create >> stage_events_to_redshift
-#
-# songplay_table_create >> stage_songs_to_redshift
-# artist_table_create >> stage_songs_to_redshift
-# song_table_create >> stage_songs_to_redshift
-# user_table_create >> stage_songs_to_redshift
-# time_table_create >> stage_songs_to_redshift
-# staging_events_table_create >> stage_songs_to_redshift
-# staging_songs_table_create >> stage_songs_to_redshift
+start_operator >> songplay_table_create
+start_operator >> artist_table_create
+start_operator >> song_table_create
+start_operator >> user_table_create
+start_operator >> time_table_create
+start_operator >> staging_events_table_create
+start_operator >> staging_songs_table_create
 
-start_operator >> stage_events_to_redshift
-start_operator >> stage_songs_to_redshift
 
+songplay_table_create >> stage_events_to_redshift
+artist_table_create >> stage_events_to_redshift
+song_table_create >> stage_events_to_redshift
+user_table_create >> stage_events_to_redshift
+time_table_create >> stage_events_to_redshift
+staging_events_table_create >> stage_events_to_redshift
+staging_songs_table_create >> stage_events_to_redshift
+
+songplay_table_create >> stage_songs_to_redshift
+artist_table_create >> stage_songs_to_redshift
+song_table_create >> stage_songs_to_redshift
+user_table_create >> stage_songs_to_redshift
+time_table_create >> stage_songs_to_redshift
+staging_events_table_create >> stage_songs_to_redshift
+staging_songs_table_create >> stage_songs_to_redshift
+
+# start_operator >> stage_events_to_redshift
+# start_operator >> stage_songs_to_redshift
 
 stage_events_to_redshift >> load_songplays_table
 stage_songs_to_redshift >> load_songplays_table

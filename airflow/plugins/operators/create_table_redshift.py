@@ -4,7 +4,7 @@ from airflow.utils.decorators import apply_defaults
 
 class CreateTableRedshiftOperator(BaseOperator):
 
-    #ui_color = '#80BD9E'
+    ui_color = '#7A3D69'
 
     @apply_defaults
     def __init__(self,

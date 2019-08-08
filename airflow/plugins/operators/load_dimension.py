@@ -32,6 +32,9 @@ class LoadDimensionOperator(BaseOperator):
         self.log.info(f'Loading {self.table} dimensions in redshift')
         redshift = PostgresHook(postgres_conn_id = self.redshift_conn_id)
 
+        self.log.info('clearing data from Redshift table for new data')
+        redshift.run("DELETE FROM {}".format(self.table))
+
         dimensions_table_insert = LoadDimensionOperator.dimensions_table_insert.format(
             destination_table = self.table,
             fields = self.fields,

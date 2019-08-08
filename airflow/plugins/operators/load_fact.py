@@ -31,6 +31,9 @@ class LoadFactOperator(BaseOperator):
         self.log.info('Loading facts data into redshift facts_table')
         redshift = PostgresHook(postgres_conn_id = self.redshift_conn_id)
 
+        self.log.info('clearing data from Redshift table for new data')
+        redshift.run("DELETE FROM {}".format(self.table))
+
         facts_table_insert = LoadFactOperator.facts_table_insert.format(
             destination_facts_table = self.table,
             fields = self.fields,

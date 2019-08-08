@@ -12,8 +12,10 @@ class AdrienPlugin(AirflowPlugin):
         operators.StageToRedshiftOperator,
         operators.LoadFactOperator,
         operators.LoadDimensionOperator,
-        operators.DataQualityOperator
+        operators.DataQualityOperator,
+        operators.CreateTableRedshiftOperator
     ]
     helpers = [
-        helpers.SqlQueries
+        helpers.SqlQueries,
+        helpers.CreateTableSqlQueries
     ]

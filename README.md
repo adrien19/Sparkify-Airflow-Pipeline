@@ -6,13 +6,12 @@ This project creates a data pipeline using Airflow that orchestrates tasks to pe
 
 Docker configs: Airflow is installed along with Postgres in using docker. the `docker-compose.yml` contains installation setup of the environment.
 
-There 3 categories of tasks:
-* Task to indicate the start of the ETL
+There 5 categories of tasks:
+* Task to indicate the start and end of the ETL
 * Tasks to first create tables in Redshift
 * Task to load facts table in Redshift
 * Tasks to load dimensions table in Redshift
 * Task to check data quality and validation in Redshift
-* Task to indicate the end of the ETL
 
 For the purposes of abstraction, custom operators have been create to optimize processing time. These can befound in the `operators` directory.
 

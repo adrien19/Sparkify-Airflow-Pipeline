@@ -106,6 +106,7 @@ stage_events_to_redshift = StageToRedshiftOperator(
     s3_key = s3_logdata_key,
     s3_bucket = s3_bucket,
     JSON_formatting = s3_full_jsonpath,
+    append_data = False
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
@@ -116,7 +117,8 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     aws_credentials_id = 'aws_credentials_id',
     s3_key = s3_songdata_key,
     s3_bucket = s3_bucket,
-    JSON_formatting="'auto' truncatecolumns"
+    JSON_formatting="'auto' truncatecolumns",
+    append_data = False
 )
 
 ## LOADING facts tables on song plays in redshit ##
@@ -127,7 +129,8 @@ load_songplays_table = LoadFactOperator(
     table = 'songplays',
     fields= 'playid, start_time, userid, level, songid, artistid, sessionid, location, user_agent',
     redshift_conn_id = 'redshift',
-    load_facts_sql = SqlQueries.songplay_table_insert
+    load_facts_sql = SqlQueries.songplay_table_insert,
+    append_data = False
 )
 
 
@@ -139,7 +142,8 @@ load_user_dimension_table = LoadDimensionOperator(
     table='users',
     fields='userid, first_name, last_name, gender, level',
     redshift_conn_id = 'redshift',
-    load_dimension = SqlQueries.user_table_insert
+    load_dimension = SqlQueries.user_table_insert,
+    append_data = False
 )
 
 load_song_dimension_table = LoadDimensionOperator(
@@ -148,7 +152,8 @@ load_song_dimension_table = LoadDimensionOperator(
     table='songs',
     fields='songid, title, artistid, year, duration ',
     redshift_conn_id = 'redshift',
-    load_dimension = SqlQueries.song_table_insert
+    load_dimension = SqlQueries.song_table_insert,
+    append_data = False
 )
 
 load_artist_dimension_table = LoadDimensionOperator(
@@ -157,7 +162,8 @@ load_artist_dimension_table = LoadDimensionOperator(
     table='artists',
     fields='artistid, name, location, lattitude, longitude',
     redshift_conn_id = 'redshift',
-    load_dimension = SqlQueries.artist_table_insert
+    load_dimension = SqlQueries.artist_table_insert,
+    append_data = False
 )
 
 load_time_dimension_table = LoadDimensionOperator(
@@ -166,7 +172,8 @@ load_time_dimension_table = LoadDimensionOperator(
     table='times',
     fields='start_time, hour, day, week, month, year, week_day',
     redshift_conn_id = 'redshift',
-    load_dimension = SqlQueries.time_table_insert
+    load_dimension = SqlQueries.time_table_insert,
+    append_data = False
 )
 
 run_quality_checks = DataQualityOperator(

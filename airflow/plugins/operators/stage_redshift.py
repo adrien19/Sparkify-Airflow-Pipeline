@@ -24,6 +24,7 @@ class StageToRedshiftOperator(BaseOperator):
                  s3_key='',
                  s3_bucket='',
                  JSON_formatting='',
+                 append_data = False,
                  *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
@@ -34,6 +35,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.s3_key = s3_key
         self.s3_bucket = s3_bucket
         self.JSON_formatting = JSON_formatting
+        self.append_data = append_data
 
     def execute(self, context):
         aws_hook = AwsHook(self.aws_credentials_id)
@@ -42,8 +44,9 @@ class StageToRedshiftOperator(BaseOperator):
         self.log.info('Making connection to redshift')
         redshift = PostgresHook(postgres_conn_id = self.redshift_conn_id)
 
-        self.log.info('clearing data from Redshift table for new data')
-        redshift.run("DELETE FROM {}".format(self.table))
+        if self.append_data == False:
+            self.log.info('clearing data from Redshift table for new data')
+            redshift.run("DELETE FROM {}".format(self.table))
 
         self.log.info('Starting to copy data from s3 to redshift')
         rendered_data_source_key = self.s3_key.format(**context)

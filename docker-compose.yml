@@ -12,7 +12,7 @@ services:
   webserver:
     image: puckel/docker-airflow:1.10.1
     build:
-      context: ./Helpers/docker-airflow/ #https://github.com/puckel/docker-airflow.git#1.10.1
+      context: ../Helpers/docker-airflow/ #https://github.com/puckel/docker-airflow.git#1.10.1
       dockerfile: Dockerfile
       args:
         AIRFLOW_DEPS: s3
